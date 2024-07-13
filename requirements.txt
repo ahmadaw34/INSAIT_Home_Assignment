@@ -1,0 +1,8 @@
+Flask
+Flask_SQLAlchemy
+openai
+psycopg2-binary
+pytest
+alembic
+Flask-migrate
+requests
