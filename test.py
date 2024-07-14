@@ -1,12 +1,20 @@
 import pytest
-from app import app,QAentity
+from app import app,QAentity,db
+from flask_migrate import upgrade
 
 @pytest.fixture
 def client():
     app.config['TESTING'] = True
+    app.config['SQLALCHEMY_DATABASE_URI'] = 'postgresql://postgres:admin123@db:5432/question_answer'
+
+    with app.app_context():
+        upgrade()
 
     with app.test_client() as client:
         yield client
+
+    with app.app_context():
+        db.drop_all()
 
 # post a question and check if the answer saved in the database
 def test_ask(client):
