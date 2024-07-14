@@ -1,25 +1,47 @@
-version: '3.8'
+version: '3.9'
 
 services:
   web:
     build: .
-    container_name: flask_app
     ports:
       - "5000:5000"
+    env_file:
+      - .env
+    environment:
+      - FLASK_ENV=development
+      - SQLALCHEMY_DATABASE_URI=postgresql://postgres:admin123@db:5432/question_answer
     depends_on:
       - db
 
   db:
-    image: postgres:15
-    container_name: postgres_db
-    environment:
-      POSTGRES_USER: postgres
-      POSTGRES_PASSWORD: admin123
-      POSTGRES_DB: question_answer
+    build:
+      context: ./postgres
     ports:
       - "5432:5432"
-    volumes:
-      - postgres_data:/var/lib/postgresql/data
-  
-volumes:
-  postgres_data:
+    environment:
+      POSTGRES_DB: question_answer
+      POSTGRES_USER: postgres
+      POSTGRES_PASSWORD: admin123
+
+  migrate:
+    build: .
+    command: flask db upgrade
+    depends_on:
+      - db
+    env_file:
+      - .env
+    environment:
+      - FLASK_ENV=development
+      - SQLALCHEMY_DATABASE_URI=postgresql://postgres:admin123@db:5432/question_answer
+
+  test:
+    build: .
+    command: pytest test.py
+    depends_on:
+      - db
+      - migrate
+    env_file:
+      - .env
+    environment:
+      - FLASK_ENV=testing
+      - SQLALCHEMY_DATABASE_URI=postgresql://postgres:admin123@db:5432/question_answer
